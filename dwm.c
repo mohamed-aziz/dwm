@@ -45,6 +45,14 @@
 #include "util.h"
 
 /* macros */
+#define GETINC(X)               ((X) - 2000)
+#define INC(X)                  ((X) + 2000)
+#define ISINC(X)                ((X) > 1000 && (X) < 3000)
+#define PREVSEL                 3000
+#define MOD(N,M)                ((N)%(M) < 0 ? (N)%(M) + (M) : (N)%(M))
+#define TRUNC(X,A,B)            (MAX((A), MIN((X), (B))))
+
+
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 #define INTERSECT(x,y,w,h,m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
@@ -189,6 +197,7 @@ static void movemouse(const Arg *arg);
 static Client *nexttiled(Client *c);
 static void pop(Client *);
 static void propertynotify(XEvent *e);
+static void pushstack(const Arg *arg);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
 static void resize(Client *c, int x, int y, int w, int h, int interact);
@@ -211,6 +220,8 @@ static void spawn(const Arg *arg);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *);
+static void bstack(Monitor *m);
+static void bstackhoriz(Monitor *m);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
@@ -223,6 +234,7 @@ static void updatebarpos(Monitor *m);
 static void updatebars(void);
 static void updateclientlist(void);
 static void updatenumlockmask(void);
+static int stackpos(const Arg *arg);
 static void updatesizehints(Client *c);
 static void updatestatus(void);
 static void updatewindowtype(Client *c);
@@ -853,27 +865,14 @@ focusmon(const Arg *arg)
 void
 focusstack(const Arg *arg)
 {
-	Client *c = NULL, *i;
-
-	if (!selmon->sel)
-		return;
-	if (arg->i > 0) {
-		for (c = selmon->sel->next; c && !ISVISIBLE(c); c = c->next);
-		if (!c)
-			for (c = selmon->clients; c && !ISVISIBLE(c); c = c->next);
-	} else {
-		for (i = selmon->clients; i != selmon->sel; i = i->next)
-			if (ISVISIBLE(i))
-				c = i;
-		if (!c)
-			for (; i; i = i->next)
-				if (ISVISIBLE(i))
-					c = i;
-	}
-	if (c) {
-		focus(c);
-		restack(selmon);
-	}
+	int i = stackpos(arg);
+        Client *c, *p;
+        if(i < 0)
+ 		return;
+        for(p = NULL, c = selmon->clients; c && (i || !ISVISIBLE(c));
+            i -= ISVISIBLE(c) ? 1 : 0, p = c, c = c->next);
+        focus(c ? c : p);
+        restack(selmon);
 }
 
 Atom
@@ -1107,6 +1106,33 @@ mappingnotify(XEvent *e)
 	if (ev->request == MappingKeyboard)
 		grabkeys();
 }
+
+
+void
+pushstack(const Arg *arg) {
+        int i = stackpos(arg);
+        Client *sel = selmon->sel, *c, *p;
+
+        if(i < 0)
+                return;
+        else if(i == 0) {
+                detach(sel);
+                attach(sel);
+        }
+        else {
+                for(p = NULL, c = selmon->clients; c; p = c, c = c->next)
+                        if(!(i -= (ISVISIBLE(c) && c != sel)))
+                                break;
+                c = c ? c : p;
+                detach(sel);
+                sel->next = c->next;
+                c->next = sel;
+        }
+        arrange(selmon);
+}
+
+
+
 
 void
 maprequest(XEvent *e)
@@ -2154,6 +2180,39 @@ xinitvisual()
 	}
 }
 
+
+
+int
+stackpos(const Arg *arg) {
+       int n, i;
+       Client *c, *l;
+
+       if(!selmon->clients)
+               return -1;
+
+       if(arg->i == PREVSEL) {
+               for(l = selmon->stack; l && (!ISVISIBLE(l) || l == selmon->sel); l = l->snext);
+               if(!l)
+                       return -1;
+               for(i = 0, c = selmon->clients; c != l; i += ISVISIBLE(c) ? 1 : 0, c = c->next);
+               return i;
+       }
+       else if(ISINC(arg->i)) {
+               if(!selmon->sel)
+                       return -1;
+               for(i = 0, c = selmon->clients; c != selmon->sel; i += ISVISIBLE(c) ? 1 : 0, c = c->next);
+               for(n = i; c; n += ISVISIBLE(c) ? 1 : 0, c = c->next);
+               return MOD(i + GETINC(arg->i), n);
+       }
+       else if(arg->i < 0) {
+               for(i = 0, c = selmon->clients; c; i += ISVISIBLE(c) ? 1 : 0, c = c->next);
+               return MAX(i + arg->i, 0);
+       }
+       else
+               return arg->i;
+}
+
+
 void
 zoom(const Arg *arg)
 {
@@ -2186,4 +2245,67 @@ main(int argc, char *argv[])
 	cleanup();
 	XCloseDisplay(dpy);
 	return EXIT_SUCCESS;
+}
+
+
+static void
+bstack(Monitor *m) {
+       int w, h, mh, mx, tx, ty, tw;
+       unsigned int i, n;
+       Client *c;
+
+       for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
+       if (n == 0)
+               return;
+       if (n > m->nmaster) {
+               mh = m->nmaster ? m->mfact * m->wh : 0;
+               tw = m->ww / (n - m->nmaster);
+               ty = m->wy + mh;
+       } else {
+               mh = m->wh;
+               tw = m->ww;
+               ty = m->wy;
+       }
+       for (i = mx = 0, tx = m->wx, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
+               if (i < m->nmaster) {
+                       w = (m->ww - mx) / (MIN(n, m->nmaster) - i);
+                       resize(c, m->wx + mx, m->wy, w - (2 * c->bw), mh - (2 * c->bw), 0);
+                       mx += WIDTH(c);
+               } else {
+                       h = m->wh - mh;
+                       resize(c, tx, ty, tw - (2 * c->bw), h - (2 * c->bw), 0);
+                       if (tw != m->ww)
+                               tx += WIDTH(c);
+               }
+       }
+}
+
+static void
+bstackhoriz(Monitor *m) {
+       int w, mh, mx, tx, ty, th;
+       unsigned int i, n;
+       Client *c;
+
+       for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
+       if (n == 0)
+               return;
+       if (n > m->nmaster) {
+               mh = m->nmaster ? m->mfact * m->wh : 0;
+               th = (m->wh - mh) / (n - m->nmaster);
+               ty = m->wy + mh;
+       } else {
+               th = mh = m->wh;
+               ty = m->wy;
+       }
+       for (i = mx = 0, tx = m->wx, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
+               if (i < m->nmaster) {
+                       w = (m->ww - mx) / (MIN(n, m->nmaster) - i);
+                       resize(c, m->wx + mx, m->wy, w - (2 * c->bw), mh - (2 * c->bw), 0);
+                       mx += WIDTH(c);
+               } else {
+                       resize(c, tx, ty, m->ww - (2 * c->bw), th - (2 * c->bw), 0);
+                       if (th != m->wh)
+                               ty += HEIGHT(c);
+               }
+       }
 }
