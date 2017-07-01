@@ -801,17 +801,20 @@ drawbar(Monitor *m)
                 x = m->ww;
         }
 
-        if ((draw_clname) && (w = x - xx) > bh) {
+        if ((w = x - xx) > bh) {
 		x = xx;
 		if (m->sel) {
 			drw_setscheme(drw, m == selmon ? &scheme[SchemeSel] : &scheme[SchemeNorm]);
-			drw_text(drw, x, 0, w, bh, m->sel->name, 0);
+                        if (draw_clname) {
+                                drw_text(drw, x, 0, w, bh, m->sel->name, 0);
+                        }
 			drw_rect(drw, x + 1, 1, dx, dx, m->sel->isfixed, m->sel->isfloating, 0);
 		} else {
 			drw_setscheme(drw, &scheme[SchemeNorm]);
 			drw_rect(drw, x, 0, w, bh, 1, 0, 1);
 		}
 	}
+
         drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 }
 
@@ -869,7 +872,8 @@ focus(Client *c)
 		detachstack(c);
 		attachstack(c);
 		grabbuttons(c, 1);
-		XSetWindowBorder(dpy, c->win, scheme[SchemeSel].border->pix);
+                if (!isMonocle)
+                        XSetWindowBorder(dpy, c->win, scheme[SchemeSel].border->pix);
 		setfocus(c);
 	} else {
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
@@ -1196,6 +1200,7 @@ monocle(Monitor *m)
 	unsigned int n = 0;
 	Client *c;
 
+        isMonocle = 1;
 	for (c = m->clients; c; c = c->next)
 		if (ISVISIBLE(c))
 			n++;
@@ -1748,7 +1753,7 @@ tile(Monitor *m)
 {
 	unsigned int i, n, h, mw, my, ty;
 	Client *c;
-
+        isMonocle = 0;
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if (n == 0)
 		return;
@@ -2345,7 +2350,7 @@ bstack(Monitor *m) {
        int w, h, mh, mx, tx, ty, tw;
        unsigned int i, n;
        Client *c;
-
+       isMonocle = 0;
        for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
        if (n == 0)
                return;
@@ -2377,7 +2382,7 @@ bstackhoriz(Monitor *m) {
        int w, mh, mx, tx, ty, th;
        unsigned int i, n;
        Client *c;
-
+       isMonocle = 0;
        for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
        if (n == 0)
                return;
