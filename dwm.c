@@ -768,7 +768,7 @@ drawbar(Monitor *m)
 	unsigned int i, occ = 0, urg = 0;
 	Client *c;
 
-	dx = (drw->fonts[0]->ascent + drw->fonts[0]->descent + 2) / 4;
+	dx = (drw->fonts[0]->ascent + drw->fonts[0]->descent + 2) / 4 ;
 
 	for (c = m->clients; c; c = c->next) {
 		occ |= c->tags;
@@ -789,7 +789,8 @@ drawbar(Monitor *m)
 	drw_text(drw, x, 0, w, bh, m->ltsymbol, 0);
 	x += w;
 	xx = x;
-	if (m == selmon) { /* status is only drawn on selected monitor */
+        if (!draw_status) goto finish;
+        if ((m == selmon)) { /* status is only drawn on selected monitor */
 		w = TEXTW(stext);
 		x = m->ww - w;
 		if (x < xx) {
@@ -797,9 +798,11 @@ drawbar(Monitor *m)
 			w = m->ww - xx;
 		}
 		drw_text(drw, x, 0, w, bh, stext, 0);
-	} else
-		x = m->ww;
-	if ((w = x - xx) > bh) {
+	} else {
+                x = m->ww;
+        }
+ finish:
+        if ((w = x - xx) > bh) {
 		x = xx;
 		if (m->sel) {
 			drw_setscheme(drw, m == selmon ? &scheme[SchemeSel] : &scheme[SchemeNorm]);
@@ -810,7 +813,8 @@ drawbar(Monitor *m)
 			drw_rect(drw, x, 0, w, bh, 1, 0, 1);
 		}
 	}
-	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
+
+        drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 }
 
 void
@@ -1638,7 +1642,7 @@ setup(void)
 	drw_load_fonts(drw, fonts, LENGTH(fonts));
 	if (!drw->fontcount)
 		die("no fonts could be loaded.\n");
-	bh = drw->fonts[0]->h + 2;
+	bh = drw->fonts[0]->h + barlineheight;
 	updategeom();
 	/* init atoms */
 	wmatom[WMProtocols] = XInternAtom(dpy, "WM_PROTOCOLS", False);

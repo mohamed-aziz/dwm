@@ -6,12 +6,14 @@ static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 
+static const int barlineheight      = 10;
+static const int draw_status        = 0;
 
 static unsigned int baralpha        = 0xd0;
 static unsigned int borderalpha     = OPAQUE;
 
-static const char *fonts[]          = { "tamsyn:size=12" };
-static const char dmenufont[]       = "tamsyn:size=12";
+static const char *fonts[]          = { "consolas:size=13" };
+static const char dmenufont[]       = "consolas:size=13";
 /* static const char col_gray1[]       = "#222222"; */
 /* static const char col_gray2[]       = "#444444"; */
 /* static const char col_gray3[]       = "#bbbbbb"; */
@@ -31,7 +33,7 @@ static const char selbgcolor[]      = "#005577";
 static const char selfgcolor[]      = "#eeeeee";
 
 /* tagging */
-static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char *tags[] = { "Web", "Programming", "Terminals", "Music", "Other"};
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -40,7 +42,7 @@ static const Rule rules[] = {
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+	{ "Firefox",  NULL,       NULL,       1,            0,           -1 },
 };
 
 /* layout(s) */
@@ -90,6 +92,8 @@ static Key keys[] = {
 	/* modifier                     key        function        argument */
         { MODKEY,                       XK_u,      setlayout,      {.v = &layouts[3]} },
         { MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+        { MODKEY,                       XK_c,      spawn,          SHCMD("clipmenue")} ,
+        { MODKEY,                       XK_w,      spawn,          SHCMD("clip")} ,
         { MODKEY,                       XK_o,      setlayout,      {.v = &layouts[4]} },
         { MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
