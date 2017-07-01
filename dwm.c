@@ -789,7 +789,6 @@ drawbar(Monitor *m)
 	drw_text(drw, x, 0, w, bh, m->ltsymbol, 0);
 	x += w;
 	xx = x;
-        if (!draw_status) goto finish;
         if ((m == selmon)) { /* status is only drawn on selected monitor */
 		w = TEXTW(stext);
 		x = m->ww - w;
@@ -801,8 +800,8 @@ drawbar(Monitor *m)
 	} else {
                 x = m->ww;
         }
- finish:
-        if ((w = x - xx) > bh) {
+
+        if ((draw_clname) && (w = x - xx) > bh) {
 		x = xx;
 		if (m->sel) {
 			drw_setscheme(drw, m == selmon ? &scheme[SchemeSel] : &scheme[SchemeNorm]);
@@ -813,7 +812,6 @@ drawbar(Monitor *m)
 			drw_rect(drw, x, 0, w, bh, 1, 0, 1);
 		}
 	}
-
         drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 }
 

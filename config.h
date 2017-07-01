@@ -7,7 +7,7 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 
 static const int barlineheight      = 10;
-static const int draw_status        = 0;
+static const int draw_clname        = 0;
 
 static unsigned int baralpha        = 0xd0;
 static unsigned int borderalpha     = OPAQUE;
