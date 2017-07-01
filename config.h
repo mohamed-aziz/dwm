@@ -13,7 +13,7 @@ static unsigned int baralpha        = 0xd0;
 static unsigned int borderalpha     = OPAQUE;
 
 static const char *fonts[]          = { "consolas:size=13" };
-static const char dmenufont[]       = "consolas:size=13";
+static const char dmenufont[]       = "consolas:size=15";
 
 
 extern int isMonocle = 0;
@@ -34,8 +34,10 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
-	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ "Firefox",  NULL,       NULL,       1,            0,           -1 },
+	{"Gimp",     NULL,       NULL,       0,            1,           -1 },
+	{"Firefox",  NULL,       NULL,       1,            0,           -1 },
+        {"Emacs",     NULL,       NULL,       1 << 1,       0,            -1 },
+        {"Chromium",     NULL,       NULL,       1 ,       0,            -1 },
 };
 
 /* layout(s) */
