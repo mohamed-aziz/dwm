@@ -9,14 +9,12 @@ static const int topbar             = 1;        /* 0 means bottom bar */
 static const int barlineheight      = 10;
 static const int draw_clname        = 0;
 
-static unsigned int baralpha        = 0xd0;
+static unsigned int baralpha        = 0xc0;
 static unsigned int borderalpha     = OPAQUE;
 
 static const char *fonts[]          = { "consolas:size=13" };
 static const char dmenufont[]       = "consolas:size=15";
 
-
-extern int isMonocle = 0;
 
 static const char normbordercolor[] = "#444444";
 static const char normbgcolor[]     = "#282828";
@@ -36,7 +34,6 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{"Gimp",     NULL,       NULL,       0,            1,           -1 },
 	{"Firefox",  NULL,       NULL,       1,            0,           -1 },
-        {"Emacs",     NULL,       NULL,       1 << 1,       0,            -1 },
         {"Chromium",     NULL,       NULL,       1 ,       0,            -1 },
 };
 
@@ -107,7 +104,7 @@ static Key keys[] = {
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
-	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
+	{ MODKEY|ShiftMask,             XK_agrave,      tag,            {.ui = ~0 } },
 	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
