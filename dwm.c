@@ -143,7 +143,6 @@ struct Monitor {
 	Window barwin;
 	const Layout *lt[2];
         Pertag *pertag;
-        char isMonocle;
 };
 
 typedef struct {
@@ -865,8 +864,8 @@ focus(Client *c)
 		detachstack(c);
 		attachstack(c);
 		grabbuttons(c, 1);
-                if (!c->mon->isMonocle)
-                        XSetWindowBorder(dpy, c->win, scheme[SchemeSel].border->pix);
+
+		XSetWindowBorder(dpy, c->win, scheme[SchemeSel].border->pix);
 		setfocus(c);
 	} else {
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
@@ -1193,7 +1192,6 @@ monocle(Monitor *m)
 	unsigned int n = 0;
 	Client *c;
 
-        m->isMonocle = 1;
 	for (c = m->clients; c; c = c->next)
 		if (ISVISIBLE(c))
 			n++;
@@ -1746,7 +1744,7 @@ tile(Monitor *m)
 {
 	unsigned int i, n, h, mw, my, ty;
 	Client *c;
-        m->isMonocle = 0;
+
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if (n == 0)
 		return;
@@ -2343,7 +2341,6 @@ bstack(Monitor *m) {
        int w, h, mh, mx, tx, ty, tw;
        unsigned int i, n;
        Client *c;
-       m->isMonocle = 0;
        for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
        if (n == 0)
                return;
@@ -2375,7 +2372,7 @@ bstackhoriz(Monitor *m) {
        int w, mh, mx, tx, ty, th;
        unsigned int i, n;
        Client *c;
-       m->isMonocle = 0;
+
        for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
        if (n == 0)
                return;
