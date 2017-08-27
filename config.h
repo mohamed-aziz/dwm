@@ -1,41 +1,35 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int borderpx  = 2;        /* border pixel of windows */
+static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 0;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
-static const int topbar             = 1;        /* 0 means bottom bar */
+static const int topbar             = 0;        /* 0 means bottom bar */
 
-static const int barlineheight      = 10;
+static const int barlineheight      = 7;
 static const int draw_clname        = 0;
 
 static unsigned int baralpha        = 0xc0;
 static unsigned int borderalpha     = OPAQUE;
 
-static const char *fonts[]          = { "consolas:size=13" };
-static const char dmenufont[]       = "consolas:size=15";
+static const char *fonts[]          = { "SF Mono:size=12" };
+static const char dmenufont[]       = "SF Mono:size=13";
 
 
-static const char normbordercolor[] = "#444444";
-static const char normbgcolor[]     = "#282828";
-static const char normfgcolor[]     = "#a0a0a0";
+static const char normbordercolor[] = "black";
+static const char normbgcolor[]     = "black";
+static const char normfgcolor[]     = "gray90";
 static const char selbordercolor[]  = "#eeeeee";
-static const char selbgcolor[]      = "#282828";
-static const char selfgcolor[]      = "#eeeeee";
+static const char selbgcolor[]      = "white";
+static const char selfgcolor[]      = "black";
+static const char dselbgcolor[]     = "gray90";
+static const char dselfgcolor[]     = "black";
+
 
 /* tagging */
-static const char *tags[] = { "Web", "Programming", "Terminals", "Music", "Other"};
+static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
-static const Rule rules[] = {
-	/* xprop(1):
-	 *	WM_CLASS(STRING) = instance, class
-	 *	WM_NAME(STRING) = title
-	 */
-	/* class      instance    title       tags mask     isfloating   monitor */
-	{"Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{"Firefox",  NULL,       NULL,       1,            0,           -1 },
-        {"Chromium",     NULL,       NULL,       1 ,       0,            -1 },
-};
+static const Rule rules[] = {{}};
 
 /* layout(s) */
 static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
@@ -77,7 +71,7 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", "-m",dmenumon, "-fn", dmenufont, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbgcolor, "-sf", selfgcolor, "-b",NULL };
+static const char *dmenucmd[] = { "dmenu_run", "-m",dmenumon, "-fn", dmenufont, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", dselbgcolor, "-sf", dselfgcolor, "-b",NULL };
 static const char *termcmd[]  = { "st", NULL };
 
 static Key keys[] = {
@@ -89,8 +83,8 @@ static Key keys[] = {
         { MODKEY,                       XK_o,      setlayout,      {.v = &layouts[4]} },
         { MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
-	/* { MODKEY,                       XK_Down,      focusstack,     {.i = +1 } }, */
-	/* { MODKEY,                       XK_Up,      focusstack,     {.i = -1 } }, */
+	{ MODKEY|ShiftMask,                       XK_Left,   focusmon,     {.i = -1 } },
+	{ MODKEY|ShiftMask,                       XK_Right,     focusmon,     {.i = +1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
